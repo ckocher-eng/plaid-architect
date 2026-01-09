@@ -1167,9 +1167,8 @@
                 products.push('balance');
             }
             
-            if (useCaseLower.includes('payment') || useCaseLower.includes('transfer') || useCaseLower.includes('ach') || useCaseLower.includes('disburse')) {
-                products.push('transfer');
-            }
+            // Note: Transfer is intentionally NOT auto-detected - it must be manually added
+            // This is because Transfer requires additional setup and approval from Plaid
             
             if (useCaseLower.includes('risk') || useCaseLower.includes('fraud') || useCaseLower.includes('return')) {
                 products.push('signal');
