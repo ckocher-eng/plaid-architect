@@ -2994,6 +2994,60 @@ app.listen(3000, () => {
                 html = '<div class="info-box">No data returned. Please try again.</div>';
             }
             
+            // Add Raw API Response section
+            html += `
+                <h3 class="section-header" style="margin-top: 40px;">🔍 Raw API Responses</h3>
+                <div class="info-box" style="background: linear-gradient(135deg, #F9FFFE 0%, #FAFCFF 100%); border-left-color: #05565C;">
+                    <p style="margin-bottom: 16px; color: #05565C;">
+                        <strong>📝 Full JSON responses from Plaid APIs</strong> - See exactly what the endpoints return
+                    </p>
+            `;
+            
+            // Show raw responses for each product
+            if (results.auth) {
+                html += `
+                    <details style="margin: 16px 0; border: 2px solid #D8FEF3; border-radius: 8px; overflow: hidden;">
+                        <summary style="padding: 12px; background: #D8FEF3; cursor: pointer; font-weight: 600; color: #05565C;">
+                            📄 POST /auth/get - Full Response
+                        </summary>
+                        <div style="padding: 16px; background: #012E37;">
+                            <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                            <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.auth, null, 2))}</pre>
+                        </div>
+                    </details>
+                `;
+            }
+            
+            if (results.balance) {
+                html += `
+                    <details style="margin: 16px 0; border: 2px solid #D8FEF3; border-radius: 8px; overflow: hidden;">
+                        <summary style="padding: 12px; background: #D8FEF3; cursor: pointer; font-weight: 600; color: #05565C;">
+                            📄 POST /accounts/balance/get - Full Response
+                        </summary>
+                        <div style="padding: 16px; background: #012E37;">
+                            <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                            <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.balance, null, 2))}</pre>
+                        </div>
+                    </details>
+                `;
+            }
+            
+            if (results.transactions) {
+                html += `
+                    <details style="margin: 16px 0; border: 2px solid #D8FEF3; border-radius: 8px; overflow: hidden;">
+                        <summary style="padding: 12px; background: #D8FEF3; cursor: pointer; font-weight: 600; color: #05565C;">
+                            📄 POST /transactions/sync - Full Response
+                        </summary>
+                        <div style="padding: 16px; background: #012E37;">
+                            <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                            <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.transactions, null, 2))}</pre>
+                        </div>
+                    </details>
+                `;
+            }
+            
+            html += `</div>`;
+            
             resultsContent.innerHTML = html;
             resultsDiv.style.display = 'block';
             
