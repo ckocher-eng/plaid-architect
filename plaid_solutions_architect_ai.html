@@ -2419,9 +2419,13 @@ def evaluate_payment():
                 
                 <div class="info-box" style="background: linear-gradient(135deg, #FFF6D8 0%, #F9DBFF 100%); border-left-color: #EBCB00;">
                     <h3>📦 Products to Test</h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
-                        ${products.map(p => `<span class="product-badge" style="background: #05565C; color: white; padding: 6px 12px; border-radius: 6px; font-size: 14px;">${productInfo[p]?.name || p}</span>`).join('')}
-                    </div>
+                    ${products && products.length > 0 ? `
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+                            ${products.map(p => `<span style="background: #05565C; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin: 4px;">${productInfo[p]?.name || p}</span>`).join('')}
+                        </div>
+                    ` : `
+                        <p style="margin-top: 12px; color: #666;">No products detected. Go back to Overview tab to see recommended products.</p>
+                    `}
                 </div>
                 
                 <div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0; border: 2px solid #D8FEF3;">
