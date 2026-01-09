@@ -2529,6 +2529,9 @@ def evaluate_payment():
             }
             
             try {
+                // Clear previous API sequence
+                apiSequence = {};
+                
                 showToast('Creating Link token...', 'info');
                 
                 // Create link token
@@ -2556,22 +2559,36 @@ def evaluate_payment():
             }
         }
         
+        // Global variable to store API sequence
+        let apiSequence = {};
+        
         // Create link token
         async function createLinkToken(backendUrl, clientId, secret, environment) {
             const products = currentSolution.products.filter(p => p !== 'identity_verification' && p !== 'balance' && p !== 'link');
+            
+            const requestBody = {
+                client_id: clientId,
+                secret: secret,
+                user_id: 'demo_user_' + Date.now(),
+                products: products,
+                environment: environment,
+            };
+            
+            // Store request (with redacted credentials)
+            apiSequence.linkTokenRequest = {
+                user: { client_user_id: requestBody.user_id },
+                client_name: 'Demo',
+                products: products,
+                country_codes: ['US'],
+                language: 'en',
+            };
             
             const response = await fetch(`${backendUrl}/link_token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    client_id: clientId,
-                    secret: secret,
-                    user_id: 'demo_user_' + Date.now(),
-                    products: products,
-                    environment: environment,
-                })
+                body: JSON.stringify(requestBody)
             });
             
             if (!response.ok) {
@@ -2580,12 +2597,24 @@ def evaluate_payment():
             }
             
             const data = await response.json();
+            
+            // Store response (with redacted link_token)
+            apiSequence.linkToken = {
+                ...data,
+                link_token: data.link_token ? data.link_token.substring(0, 20) + '...[REDACTED]' : undefined
+            };
+            
             return data.link_token;
         }
         
         // Handle successful Link connection
         async function handleLinkSuccess(publicToken, metadata, backendUrl, clientId, secret, environment) {
             try {
+                // Store exchange request (with redacted token)
+                apiSequence.exchangeRequest = {
+                    public_token: publicToken.substring(0, 20) + '...[REDACTED]'
+                };
+                
                 // Exchange public token
                 const exchangeResponse = await fetch(`${backendUrl}/exchange_token`, {
                     method: 'POST',
@@ -2609,6 +2638,13 @@ def evaluate_payment():
                 demoAccessToken = exchangeData.access_token;
                 demoItemId = exchangeData.item_id;
                 
+                // Store exchange response (with redacted access_token)
+                apiSequence.exchangeResponse = {
+                    access_token: exchangeData.access_token ? exchangeData.access_token.substring(0, 20) + '...[REDACTED]' : undefined,
+                    item_id: exchangeData.item_id,
+                    request_id: exchangeData.request_id
+                };
+                
                 showToast('Token exchanged! Fetching data...', 'success');
                 
                 // Fetch data for all products
@@ -2622,7 +2658,9 @@ def evaluate_payment():
         
         // Fetch data for all products
         async function fetchDemoData(backendUrl, clientId, secret, environment) {
-            const results = {};
+            const results = {
+                ...apiSequence // Include the API sequence (link token + exchange)
+            };
             const products = currentSolution.products.filter(p => p !== 'identity_verification' && p !== 'link');
             
             try {
@@ -2767,55 +2805,159 @@ def evaluate_payment():
                 html = '<div class="info-box">No data returned. Please try again.</div>';
             }
             
-            // Add Raw API Response section
+            // Add API Sequence section
             html += `
-                <h3 class="section-header" style="margin-top: 40px;">🔍 Raw API Responses</h3>
+                <h3 class="section-header" style="margin-top: 40px;">🔄 API Sequence</h3>
                 <div class="info-box" style="background: linear-gradient(135deg, #F9FFFE 0%, #FAFCFF 100%); border-left-color: #05565C;">
                     <p style="margin-bottom: 16px; color: #05565C;">
-                        <strong>📝 Full JSON responses from Plaid APIs</strong> - See exactly what the endpoints return
+                        <strong>📝 Complete API call sequence</strong> - Request and response for each endpoint in order
                     </p>
             `;
             
-            // Show raw responses for each product
+            // Step 1: Link Token Creation
+            if (results.linkTokenRequest && results.linkToken) {
+                html += `
+                    <div style="margin: 20px 0; padding: 16px; background: white; border-radius: 8px; border: 2px solid #10D1B7;">
+                        <div style="font-weight: 600; color: #05565C; margin-bottom: 12px; font-size: 16px;">
+                            1️⃣ POST /link/token/create
+                        </div>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📤 Request Body
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.linkTokenRequest, null, 2))}</pre>
+                            </div>
+                        </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📥 Response
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.linkToken, null, 2))}</pre>
+                            </div>
+                        </details>
+                    </div>
+                `;
+            }
+            
+            // Step 2: Token Exchange
+            if (results.exchangeRequest && results.exchangeResponse) {
+                html += `
+                    <div style="margin: 20px 0; padding: 16px; background: white; border-radius: 8px; border: 2px solid #0DADF2;">
+                        <div style="font-weight: 600; color: #05565C; margin-bottom: 12px; font-size: 16px;">
+                            2️⃣ POST /item/public_token/exchange
+                        </div>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📤 Request Body
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.exchangeRequest, null, 2))}</pre>
+                            </div>
+                        </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📥 Response
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.exchangeResponse, null, 2))}</pre>
+                            </div>
+                        </details>
+                    </div>
+                `;
+            }
+            
+            let stepNumber = 3;
+            
+            // Step 3+: Product API calls
             if (results.auth) {
                 html += `
-                    <details style="margin: 16px 0; border: 2px solid #D8FEF3; border-radius: 8px; overflow: hidden;">
-                        <summary style="padding: 12px; background: #D8FEF3; cursor: pointer; font-weight: 600; color: #05565C;">
-                            📄 POST /auth/get - Full Response
-                        </summary>
-                        <div style="padding: 16px; background: #012E37;">
-                            <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
-                            <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.auth, null, 2))}</pre>
+                    <div style="margin: 20px 0; padding: 16px; background: white; border-radius: 8px; border: 2px solid #8B8BF9;">
+                        <div style="font-weight: 600; color: #05565C; margin-bottom: 12px; font-size: 16px;">
+                            ${stepNumber}️⃣ POST /auth/get
                         </div>
-                    </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📤 Request Body
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify({access_token: "[REDACTED]"}, null, 2))}</pre>
+                            </div>
+                        </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📥 Response
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.auth, null, 2))}</pre>
+                            </div>
+                        </details>
+                    </div>
                 `;
+                stepNumber++;
             }
             
             if (results.balance) {
                 html += `
-                    <details style="margin: 16px 0; border: 2px solid #D8FEF3; border-radius: 8px; overflow: hidden;">
-                        <summary style="padding: 12px; background: #D8FEF3; cursor: pointer; font-weight: 600; color: #05565C;">
-                            📄 POST /accounts/balance/get - Full Response
-                        </summary>
-                        <div style="padding: 16px; background: #012E37;">
-                            <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
-                            <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.balance, null, 2))}</pre>
+                    <div style="margin: 20px 0; padding: 16px; background: white; border-radius: 8px; border: 2px solid #EBCB00;">
+                        <div style="font-weight: 600; color: #05565C; margin-bottom: 12px; font-size: 16px;">
+                            ${stepNumber}️⃣ POST /accounts/balance/get
                         </div>
-                    </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📤 Request Body
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify({access_token: "[REDACTED]"}, null, 2))}</pre>
+                            </div>
+                        </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📥 Response
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.balance, null, 2))}</pre>
+                            </div>
+                        </details>
+                    </div>
                 `;
+                stepNumber++;
             }
             
             if (results.transactions) {
                 html += `
-                    <details style="margin: 16px 0; border: 2px solid #D8FEF3; border-radius: 8px; overflow: hidden;">
-                        <summary style="padding: 12px; background: #D8FEF3; cursor: pointer; font-weight: 600; color: #05565C;">
-                            📄 POST /transactions/sync - Full Response
-                        </summary>
-                        <div style="padding: 16px; background: #012E37;">
-                            <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
-                            <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.transactions, null, 2))}</pre>
+                    <div style="margin: 20px 0; padding: 16px; background: white; border-radius: 8px; border: 2px solid #EE99FF;">
+                        <div style="font-weight: 600; color: #05565C; margin-bottom: 12px; font-size: 16px;">
+                            ${stepNumber}️⃣ POST /transactions/sync
                         </div>
-                    </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📤 Request Body
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify({access_token: "[REDACTED]", cursor: null}, null, 2))}</pre>
+                            </div>
+                        </details>
+                        <details style="margin: 8px 0;">
+                            <summary style="cursor: pointer; color: #088181; font-weight: 600; padding: 8px; background: #D8FEF3; border-radius: 4px;">
+                                📥 Response
+                            </summary>
+                            <div style="padding: 12px; background: #012E37; margin-top: 8px; border-radius: 4px;">
+                                <button class="copy-button" onclick="copyCodeFromPre(this)" style="margin-bottom: 8px;">Copy JSON</button>
+                                <pre style="margin: 0; overflow-x: auto; color: #D8FEF3; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;">${escapeHtml(JSON.stringify(results.transactions, null, 2))}</pre>
+                            </div>
+                        </details>
+                    </div>
                 `;
             }
             
