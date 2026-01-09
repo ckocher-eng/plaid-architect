@@ -1,0 +1,22 @@
+{
+  "name": "plaid-solutions-architect-demo-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Plaid Solutions Architect Demo",
+  "main": "demo-backend-server.js",
+  "scripts": {
+    "start": "node demo-backend-server.js",
+    "dev": "node demo-backend-server.js"
+  },
+  "keywords": ["plaid", "demo", "backend"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "plaid": "^20.0.0",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+
