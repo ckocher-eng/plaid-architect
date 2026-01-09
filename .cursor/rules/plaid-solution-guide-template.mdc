@@ -1,0 +1,381 @@
+---
+alwaysApply: false
+---
+
+# Plaid Solution Guide Template
+
+## Overview
+This rule provides guidance for creating branded, interactive Plaid solution guides using the official template. The template ensures consistency across all technical documentation and sales engineering materials.
+
+## When to Use This Template
+Use this template when creating:
+- **Product implementation guides** (Plaid Check, Transfer, Signal, etc.)
+- **API sequence diagrams** with interactive examples
+- **Technical POC documentation** for prospects
+- **Integration walkthroughs** for specific use cases
+- **Sales engineering solution briefs** with working code examples
+
+## Template Location
+**Path:** `.cursor/templates/plaid_solution_guide_template.html`
+
+## How to Use
+
+### Step 1: Copy the Template
+```bash
+cp .cursor/templates/plaid_solution_guide_template.html [your_new_guide_name].html
+```
+
+### Step 2: Replace Placeholder Content
+Search for and replace the following placeholders:
+- `[PRODUCT_NAME]` - e.g., "Check", "Transfer", "Signal"
+- `[SOLUTION_TYPE]` - e.g., "Consumer Report Flow", "End-to-End Implementation"
+- `[SOLUTION_TITLE]` - Full title in header
+- `[SOLUTION_DESCRIPTION]` - Subtitle describing the guide
+
+### Step 3: Add Your Mermaid Sequence Diagram
+Inside the `.diagram-container > .mermaid` div, add your sequence diagram:
+
+**IMPORTANT:** When generating Mermaid syntax, **ALWAYS reference @mermaid-rules.mdc** for complete syntax guidelines.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant USER as End User
+    participant PLAID_LINK as Plaid Link (client)
+    participant APP as Your Application
+    participant BACKEND as Your Backend
+    participant PLAID as Plaid API
+    
+    Note over BACKEND,PLAID: Step 1: Create Link Token
+    BACKEND->>PLAID: POST /link/token/create\n(products: [product_name])
+    PLAID-->>BACKEND: link_token
+```
+
+**Critical Mermaid Syntax Rules:**
+
+**⚠️ ALWAYS follow @mermaid-rules.mdc for:**
+- Reserved keyword avoidance (NEVER use LINK, ALT, LOOP, END as participant IDs)
+- Single-line message text requirements
+- Special character escaping
+- Parentheses restrictions (no colons or equals inside)
+- Complete syntax validation
+
+**Key rules for Plaid diagrams:**
+1. **Participant naming:** Use `PLAID_LINK` not `LINK` (LINK is a reserved keyword!)
+2. **Message format:** All message text on ONE line - use `\n` for explicit breaks
+3. **Avoid special chars:** Use "and" instead of `&`, avoid `:` and `=` inside parentheses
+4. **Always include Plaid Link** as a participant between End User and Your Application
+5. **Update collapsible source** - Copy exact Mermaid syntax below diagram
+6. **Copy button included** - Branded button auto-positioned in top-right
+
+**Before finalizing any Mermaid diagram:** Reference @mermaid-rules.mdc to validate syntax!
+
+### Step 4: Populate API Examples
+In the JavaScript section, add your API examples to the `apiExamples` object:
+
+```javascript
+const apiExamples = {
+    'POST /link/token/create': {
+        request: `curl -X POST https://sandbox.plaid.com/link/token/create \\
+  -H "Content-Type: application/json" \\
+  -d '{
+  "client_id": "PLAID_CLIENT_ID",
+  "secret": "PLAID_SECRET",
+  "products": ["auth"]
+}'`,
+        response: `{
+  "link_token": "link-sandbox-...",
+  "expiration": "2024-10-03T18:30:00Z"
+}`
+    }
+};
+```
+
+### Step 5: Add API Documentation Links
+Map API endpoints to their documentation URLs in the `apiLinks` object:
+
+```javascript
+const apiLinks = {
+    'POST /link/token/create': 'https://plaid.com/docs/api/link/#linktokencreate',
+    'POST /item/public_token/exchange': 'https://plaid.com/docs/api/items/#itempublic_tokenexchange',
+    'Initialize with link_token': 'https://plaid.com/docs/link/#initializing-link'  // REQUIRED: Link initialization step
+};
+```
+
+**Required Link:** Always include `'Initialize with link_token': 'https://plaid.com/docs/link/#initializing-link'` to make the Link initialization step clickable in the sequence diagram.
+
+### Step 6: Add Plaid Link Initialization Section
+**IMPORTANT:** Add this section BEFORE `/item/public_token/exchange` to match sequence diagram order.
+
+**Typical order in API Reference section:**
+
+**For standard products (Auth, Transactions, Balance, Identity, Signal):**
+1. Create Link Token (`POST /link/token/create`)
+2. **Initialize Plaid Link** ← JavaScript/React examples with callbacks
+3. Exchange Public Token (`POST /item/public_token/exchange`)
+4. Retrieve [Product] Data ← Product-specific endpoints
+
+**For CRA products (Base Report, Income Insights):**
+1. Create User Token (`POST /user/create`)
+2. Create Link Token (`POST /link/token/create`)
+3. **Initialize Plaid Link** ← JavaScript/React examples with callbacks
+4. Exchange Public Token (`POST /item/public_token/exchange`) ← Only if using Auth/Identity
+5. Report Generation (automatic via webhook)
+6. Retrieve Reports ← Product-specific endpoints
+
+After `/link/token/create` and BEFORE `/item/public_token/exchange`, add a comprehensive Link initialization section:
+
+**Required Elements:**
+1. **Callbacks Overview Box** - Explain onSuccess, onExit, onEvent
+2. **JavaScript/Web Example** - Vanilla JavaScript with all three callbacks (collapsible)
+3. **React Example** - Using react-plaid-link package (collapsible)
+4. **Platform Links** - Links to Web, React Native, iOS, Android documentation
+
+**Callback Details to Include:**
+
+**onSuccess Callback:**
+- Fired when user successfully links their bank account
+- Returns: `public_token` (string) and `metadata` (object)
+- Metadata includes: institution, accounts, link_session_id
+- For CRA products (Base Report, Income Insights): Note that NO public_token exchange is needed
+- For Auth/Transactions products: Send public_token to backend for exchange
+
+**onExit Callback:**
+- Fired when user exits Link or an error occurs
+- Returns: `error` (object or null) and `metadata` (object)
+- If error exists: Check error.error_code, error.error_type, error.error_message, error.display_message
+- If no error: User exited intentionally - check metadata.status for exit point
+- Use for error logging and tracking funnel drop-offs
+
+**onEvent Callback:**
+- Fired throughout the Link flow for analytics and debugging
+- Returns: `eventName` (string) and `metadata` (object)
+- Common events: OPEN, SELECT_INSTITUTION, SUBMIT_CREDENTIALS, SUBMIT_MFA, HANDOFF, ERROR, EXIT
+- Metadata varies by event (institution_id, error_code, mfa_type, view_name, etc.)
+- Use for conversion funnel tracking and support troubleshooting
+
+**Code Example Structure:**
+```javascript
+// Web example should show:
+- Including the Plaid Link SDK script tag
+- Plaid.create() with token and all three callbacks
+- Full onSuccess with backend communication
+- Full onExit with error handling
+- Full onEvent with analytics tracking
+- linkHandler.open() to trigger Link
+
+// React example should show:
+- npm install react-plaid-link
+- usePlaidLink hook with callbacks
+- Token fetching in useEffect
+- Button component with open() and ready state
+```
+
+**Documentation Links:**
+- Web: https://plaid.com/docs/link/web/
+- React Native: https://plaid.com/docs/link/react-native/
+- iOS: https://plaid.com/docs/link/ios/
+- Android: https://plaid.com/docs/link/android/
+
+### Step 7: Fill Content Sections
+Replace comment placeholders with your content:
+- **Key Integration Steps** - Main workflow bullets
+- **API Reference** - Detailed endpoint documentation with CURL examples
+- **Additional Resources** - Resource cards linking to docs
+- **Integration Tips** - Best practices and gotchas
+
+## Copy Button Feature
+
+### 📋 One-Click Mermaid Copy
+The template includes a branded copy button for the Mermaid diagram source code:
+
+**Location:** Top-right corner of the collapsible Mermaid source section
+
+**Visual Design:**
+- **Default State:** Minted-to-Blue-Sky gradient (`#10D1B7` → `#0DADF2`) with 📋 icon
+- **Hover State:** Lighter gradient with lift animation and enhanced shadow
+- **Copied State:** Green success gradient (`#46DA10` → `#8CF25A`) with ✅ icon for 2 seconds
+
+**User Experience:**
+1. User clicks "📋 Show Mermaid Diagram Source"
+2. Click the "📋 Copy" button in top-right
+3. Button changes to "✅ Copied!" with green gradient
+4. Entire Mermaid syntax copied to clipboard
+5. Auto-reverts to "📋 Copy" after 2 seconds
+
+**Technical Implementation:**
+- Uses modern Clipboard API (`navigator.clipboard.writeText()`)
+- Positioned absolutely in top-right of `.code-example` container
+- Smooth transitions on all state changes
+- Error handling with fallback alert
+
+**No Additional Setup Required** - The feature is fully implemented in the template with:
+- CSS styles for all button states
+- HTML structure with copy button
+- JavaScript `copyMermaidCode()` function
+- Proper error handling
+
+## Template Features
+
+### 🎨 Branding (Auto-Applied)
+All guides follow Plaid's official branding guidelines:
+- **Fonts:** Figtree (body), Figtree Semi-Bold (headings), Unna (numbers/quotes)
+- **Colors:** Minted (teal), Blue Sky, Royal Purple, Credit Lime, Gold Standard
+- **Gradients:** Holographic color strips, Benjamin/Elizabeth/Viola gradients
+- **Typography:** 700-900 level colors for text, proper contrast ratios
+
+### 🔄 Interactive Features (Pre-Built)
+- **Hover tooltips** - Show CURL request/response on API endpoint hover
+- **Click to docs** - API endpoints link directly to Plaid documentation
+- **Scrollable tooltips** - Long responses include branded scrollbars
+- **Collapsible examples** - Toggle code examples to save space
+- **Mermaid source code** - Collapsible read-only Mermaid syntax below each diagram with one-click copy button
+- **Copy to clipboard** - Branded copy button in top-right of Mermaid source with visual feedback (changes to "✅ Copied!" for 2 seconds)
+- **Smooth animations** - Cards and buttons have hover effects
+
+### 📱 Responsive Design
+- **Max width:** 1400px container
+- **Flexible grids** - Resource cards adapt to screen size
+- **Scroll handling** - Horizontal scroll for wide diagrams/code
+
+### 🤖 AI Attribution (Built-In)
+Every guide includes:
+- **Conversational AI disclosure** - Personal, first-person explanation ("I built this guide using AI...")
+- **Direct tone** - Shorter, more personable messaging (48 words vs 85 words in original)
+- **Official docs reference** - Clear links to Plaid's documentation as source of truth
+- **Author byline** - David Majetic, Sales Engineering Manager with LinkedIn profile link
+- **Transparency** - Upfront about AI assistance while emphasizing accuracy
+
+**Attribution Text:**
+```
+I built this guide using AI to help you evaluate Plaid faster. All code examples 
+and API details come straight from Plaid's official documentation—I just structured 
+it in a way that's easier to follow. Spot something off? The official Plaid docs 
+are always your best reference.
+```
+
+## Validation Checklist
+
+Before sharing your guide, verify:
+- [ ] All API examples validated against [Plaid's official docs](https://plaid.com/docs/)
+- [ ] Sequence diagram renders correctly (test in browser)
+- [ ] All documentation links work and point to current docs
+- [ ] Interactive tooltips display on hover
+- [ ] API endpoints are clickable and open docs in new tab
+- [ ] Code examples use proper formatting (one param per line)
+- [ ] Product-specific test credentials included (if applicable)
+- [ ] Mobile responsiveness tested
+- [ ] No placeholder text ([PRODUCT_NAME], etc.) remains
+
+## Styling Reference
+
+### Color Palette
+```css
+/* Minted (Primary) */
+--minted-200: #D8FEF3;  /* Light backgrounds */
+--minted-450: #10D1B7;  /* Accents, buttons */
+--minted-700: #05565C;  /* Body text */
+--minted-900: #012E37;  /* Dark text, code backgrounds */
+
+/* Blue Sky (Interactive) */
+--blue-sky-450: #0DADF2;  /* Gradients */
+--blue-sky-600: #0B7BBC;  /* Links */
+--blue-sky-700: #07578D;  /* Headings */
+
+/* Royal Purple (Accents) */
+--royal-purple-450: #8B8BF9;  /* Gradient accents */
+--royal-purple-700: #4444A7;  /* Special boxes */
+
+/* Credit Lime (Success) */
+--credit-lime-450: #46DA10;  /* Buttons, success states */
+--credit-lime-700: #0B5C05;  /* Dark text on lime */
+
+/* Gold Standard (Warnings) */
+--gold-standard-450: #EBCB00;  /* Warning accents */
+--gold-standard-700: #615E00;  /* Warning text */
+```
+
+### Component Classes
+- `.info-box` - Key information callouts (teal gradient)
+- `.webhook-box` - Webhook notifications (yellow/pink gradient)
+- `.sandbox-box` - Test credentials (purple gradient)
+- `.api-endpoint` - API reference cards (white, hover effects)
+- `.resource-card` - Documentation links (grid layout)
+- `.code-example` - Code blocks (dark teal, syntax highlighting)
+- `.doc-link` - CTA buttons (teal gradient)
+- `.holo-accent` - Rainbow section dividers
+
+## Best Practices
+
+### Content Strategy
+1. **Start with the "why"** - Explain the use case/problem being solved
+2. **Show, don't tell** - Use sequence diagrams and code examples
+3. **Progressive disclosure** - Use collapsible sections for detailed examples
+4. **Link generously** - Every API mention should link to docs
+5. **Include test data** - Provide sandbox credentials and sample responses
+
+### API Documentation
+1. **Validate with AskBill/Plaid Docs** - Use `mcp_askbill-plaid_plaid_docs` tool
+2. **Use real response structures** - Don't truncate important fields
+3. **Format JSON properly** - One parameter per line, proper indentation
+4. **Include error cases** - Show both success and failure responses
+5. **Add context** - Explain what each endpoint does and when to use it
+
+### Visual Design
+1. **Use holographic accents sparingly** - One gradient per section
+2. **Maintain hierarchy** - H1 (white header), H2 (teal border), H3 (blue sky)
+3. **White space matters** - Don't cram content, let it breathe
+4. **Icons with purpose** - Use emojis consistently (📚 docs, 🎯 key points, 💡 tips)
+5. **Test readability** - Ensure proper contrast (700-900 colors for text)
+
+## Example Usage
+
+### Creating a New Guide for Plaid Income
+```bash
+# 1. Copy template
+cp .cursor/templates/plaid_solution_guide_template.html plaid_income_verification_guide.html
+
+# 2. Use AI to help populate
+# In Cursor, reference the template:
+# "Using @plaid_solution_guide_template.html as the base, create a guide for 
+#  Plaid Income verification including the /income/verification/precheck endpoint"
+
+# 3. Validate API examples
+# "Validate the /income/verification/precheck response with @mcp_askbill-plaid_plaid_docs"
+
+# 4. Test interactivity
+open plaid_income_verification_guide.html
+```
+
+## Maintenance
+
+### Updating All Guides
+If branding guidelines change:
+1. Update the template file first
+2. Document changes in this rule
+3. Consider batch updating existing guides
+4. Test one guide thoroughly before rolling out to all
+
+### Version Control
+- Template changes should be tracked in git
+- Major updates should bump template version in filename
+- Keep changelog in this rule for reference
+
+## Support Resources
+
+### Getting Help
+- **Plaid Documentation:** https://plaid.com/docs/
+- **AskBill (Plaid AI):** Use `mcp_askbill-plaid_plaid_docs` or `mcp_askbill-plaid_ask_bill`
+- **Branding Guidelines:** `.cursor/rules/branding-guidelines.mdc`
+- **Template Issues:** Contact David Majetic
+
+### Related Rules
+- `branding-guidelines.mdc` - Official Plaid brand standards
+- Other product-specific rules as they're created
+
+---
+
+**Template Version:** 1.0  
+**Created:** October 2025  
+**Last Updated:** October 2025  
+**Maintained By:** David Majetic, Sales Engineering Manager

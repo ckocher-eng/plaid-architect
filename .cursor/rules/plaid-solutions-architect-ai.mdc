@@ -1,0 +1,485 @@
+# Plaid Solutions Architect AI - HTML Template & Usage Guide
+
+When generating Plaid integration solution guides (using @plaid-solutions-architect-ai.mdc), use the following template structure, styling guidelines, and content patterns.
+
+## What This Tool Does
+
+The Plaid Solutions Architect AI is an interactive HTML tool that:
+- Analyzes customer use cases and recommends appropriate Plaid products
+- Generates complete technical solution guides with architecture diagrams, code samples, and scope estimates
+- Provides a live demo capability to test integrations
+- Exports guides in multiple formats (PDF, Markdown, JSON)
+
+**Primary Use Cases:**
+- Sales Engineers creating technical proposals
+- Solution Architects designing Plaid integrations
+- Account Executives needing technical documentation for prospects
+- Customer Success helping customers understand implementation scope
+
+## File Locations
+
+**Main Tool:**
+- `plaid_solutions_architect_ai.html` - The interactive solution guide generator
+
+**Backend Server (required for demo):**
+- `demo-backend-server.js` - Express server that proxies Plaid API calls
+- `package.json` - Dependencies (express, plaid, cors)
+
+**Documentation:**
+- `README.md` - Project overview and quick start
+- `DEPLOY.md` - Deployment instructions for Railway, Render, Vercel
+- `QUICK_DEPLOY.md` - Simplified deployment guide
+
+## Using the Tool
+
+### Opening the Tool
+Simply open `plaid_solutions_architect_ai.html` in a web browser. No local server needed for the frontend.
+
+### Workflow
+1. **Enter Use Case** - Describe what the customer wants to build (e.g., "I need to verify bank accounts for ACH payments")
+2. **AI Analysis** - Tool analyzes and recommends Plaid products (Auth, Transactions, Balance, Signal, Transfer, Income, Identity Verification, Assets, Check)
+3. **Review Guide** - View generated solution guide with 5 tabs:
+   - **Overview** - Product recommendations, success factors, pain points addressed
+   - **Architecture** - Mermaid sequence diagrams showing API flow
+   - **Code** - Ready-to-use Node.js and Python examples
+   - **Live Demo** - Test the integration with real Plaid API calls
+   - **Scope Calculator** - Timeline, complexity, team size estimates
+   - **Export** - Download as PDF, Markdown, or JSON
+
+### Key Features
+
+**Dynamic Product Selection:**
+- Add/remove products from recommended list
+- Guide auto-regenerates with updated architecture and code
+
+**Live Demo Tab:**
+- Requires deployed backend server
+- Enter Client ID/Secret to test real Plaid APIs
+- Displays actual data from Auth, Balance, Transactions products
+
+**Export Options:**
+- PDF for client proposals
+- Markdown for documentation
+- JSON for integration with other tools
+
+## Customizing Generated Guides
+
+### Product Detection Logic
+
+The tool uses keyword analysis to recommend products:
+
+```javascript
+// Examples of use case keywords → product mapping
+"verify" OR "account number" → Auth
+"transactions" OR "spending" OR "budget" → Transactions
+"balance" OR "funds" → Balance (auto-available)
+"payment" OR "transfer" OR "ACH" → Transfer
+"risk" OR "fraud" → Signal
+"income" OR "paycheck" → Income
+"identity" OR "KYC" OR "AML" → Identity Verification
+"loan" OR "credit" OR "underwriting" → Check + Income
+```
+
+### Architecture Diagrams
+
+Mermaid sequence diagrams are auto-generated based on selected products:
+
+**Bank Linking Flow:**
+1. User initiates connection
+2. Create Link token
+3. Launch Plaid Link
+4. Exchange token
+5. Fetch product data (Auth, Transactions, Balance, etc.)
+
+**Identity Verification Flow (separate):**
+1. Create IDV session
+2. Create IDV Link token
+3. Launch Link (IDV mode)
+4. User uploads ID/selfie
+5. Retrieve verification results
+
+**Key Implementation Details:**
+- Balance is NEVER in products array (auto-available)
+- Link is the UI component (not a product)
+- IDV is a completely separate flow with its own diagram
+
+### Code Generation
+
+The tool generates production-ready code for:
+
+**Node.js (Express + Plaid SDK):**
+- Link token creation
+- Public token exchange
+- Product-specific API calls (Auth, Transactions, Balance, etc.)
+- Webhook handling
+- Error management
+
+**Python (Flask + Plaid SDK):**
+- Same functionality as Node.js
+- Pythonic code style
+- Type hints and best practices
+
+**Frontend (Vanilla JavaScript):**
+- Plaid Link initialization
+- Token exchange flow
+- Error handling
+
+## Styling & Design System
+
+### Color Palette (Plaid Brand Colors)
+
+```css
+/* Primary Colors */
+--plaid-teal: #10D1B7;      /* Main brand color */
+--plaid-blue: #0DADF2;      /* Secondary accent */
+--plaid-dark: #05565C;      /* Headings, text */
+--plaid-green: #088181;     /* Success, active states */
+
+/* Background Gradients */
+--gradient-primary: linear-gradient(135deg, #10D1B7 0%, #088181 100%);
+--gradient-light: linear-gradient(135deg, #D8FEF3 0%, #E6F9FF 100%);
+--gradient-purple: linear-gradient(135deg, #E6E6FF 0%, #F9DBFF 100%);
+--gradient-yellow: linear-gradient(135deg, #FFF6D8 0%, #F9DBFF 100%);
+
+/* UI Elements */
+--light-bg: #D8FEF3;        /* Info boxes */
+--border: #D8FEF3;          /* Borders, dividers */
+--text-dark: #05565C;       /* Primary text */
+--text-light: #666;         /* Secondary text */
+```
+
+### Component Classes
+
+**Info Boxes:**
+```html
+<div class="info-box" style="background: linear-gradient(135deg, #D8FEF3 0%, #E6F9FF 100%); border-left-color: #10D1B7;">
+    <h3>📋 Title</h3>
+    <p>Content...</p>
+</div>
+```
+
+**Product Badges:**
+```html
+<span class="product-badge" style="background: #10D1B7; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 600;">
+    Auth
+</span>
+```
+
+**Section Headers:**
+```html
+<h2 class="section-header" style="color: #05565C; border-bottom: 3px solid #10D1B7;">
+    Section Title
+</h2>
+```
+
+**Code Blocks:**
+```html
+<div class="code-block">
+    <div class="code-header">
+        <span class="code-lang">Node.js</span>
+        <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+    </div>
+    <pre><code>// Code here</code></pre>
+</div>
+```
+
+## Scope Calculator Logic
+
+### Complexity Calculation
+
+```javascript
+complexity = 'low'    // 1-2 products, straightforward
+complexity = 'medium' // 3-4 products, moderate integration
+complexity = 'high'   // 5+ products, complex requirements
+```
+
+### Timeline Estimates
+
+**Low Complexity (1-2 products):**
+- Timeline: 2-4 weeks
+- Dev Hours: 40-80 hours
+- Team: 1 developer
+- Phases: Setup (1 week) → Build (1 week) → Test (1 week)
+
+**Medium Complexity (3-4 products):**
+- Timeline: 4-8 weeks
+- Dev Hours: 120-200 hours
+- Team: 1-2 developers
+- Phases: Setup (1 week) → Core Build (2-3 weeks) → Integration (1-2 weeks) → Test (1 week)
+
+**High Complexity (5+ products):**
+- Timeline: 8-12 weeks
+- Dev Hours: 240-400 hours
+- Team: 2-3 developers
+- Phases: Architecture (1 week) → Core Build (3-4 weeks) → Advanced Features (2-3 weeks) → Integration (1-2 weeks) → Test & Launch (1 week)
+
+### Adjustment Factors
+
+**Increase timeline/complexity if:**
+- Customer has legacy systems
+- Requires custom reconciliation
+- Multiple account types (business + consumer)
+- High transaction volume (>1M/month)
+- Complex error handling requirements
+
+**Decrease timeline/complexity if:**
+- Using Plaid's quickstart templates
+- Standard use case (no customization)
+- Existing Plaid integration (adding products)
+- Strong engineering team
+
+## Deployment & Sharing
+
+### Backend Deployment Required
+
+The Live Demo tab requires a deployed backend. Options:
+
+**Railway (Easiest):**
+```bash
+npm i -g @railway/cli
+railway login
+railway init
+railway up
+```
+
+**Render (No CLI):**
+1. Push code to GitHub
+2. Connect Render to GitHub repo
+3. Set Build: `npm install`, Start: `npm start`
+4. Copy deployed URL
+
+**Vercel:**
+```bash
+npm i -g vercel
+vercel
+```
+
+### Sharing the Tool
+
+**Option A: Host the HTML**
+- GitHub Pages (free)
+- Netlify (drag & drop)
+- Company web server
+
+**Option B: Send the File**
+- Email `plaid_solutions_architect_ai.html`
+- Works as standalone file
+- Users need their Plaid credentials
+
+### Configuration
+
+After deploying backend, update the HTML:
+```javascript
+// Find this line (around line 2480):
+value="http://localhost:3000/api"
+
+// Change to your deployed URL:
+value="https://your-backend.onrender.com/api"
+```
+
+## Content Guidelines for Generated Guides
+
+### Product Descriptions
+
+**Auth:**
+- Instantly verify bank accounts (no micro-deposits)
+- Get account/routing numbers in real-time
+- 95% instant verification rate
+- Same-day ACH setup
+
+**Transactions:**
+- Up to 24 months of transaction history
+- Real-time transaction streaming via webhooks
+- Enriched merchant data with logos
+- Categorization with 50+ categories
+
+**Balance:**
+- Real-time account balances
+- Available balance (accounts for pending transactions)
+- Multiple account support
+- Automatically available (not in products array)
+
+**Signal:**
+- Return risk score (0-100)
+- ACH return prediction
+- Fraud detection
+- Real-time decisioning
+
+**Transfer:**
+- Same-day ACH transfers
+- Instant transfers (RTP)
+- Automated return handling
+- Built-in compliance
+
+**Income:**
+- Payroll data directly from employers (via Argyle)
+- Bank-based income verification
+- VOI/VOE documents
+- Instant income insights
+
+**Identity Verification:**
+- Government ID upload & verification
+- Selfie + liveness check
+- Document authenticity verification
+- Separate flow from bank linking
+
+### Success Factors
+
+Always include these in generated guides:
+- Clear business objective
+- Technical requirements documented
+- Sandbox testing plan
+- Production launch checklist
+- Compliance considerations (FCRA, GLBA, etc.)
+- Error handling strategy
+- User experience optimization
+
+### Technical Stack Needed
+
+Recommend based on products:
+- **Backend:** Node.js/Python/Ruby/Java
+- **Database:** PostgreSQL/MySQL (store access tokens securely)
+- **Frontend:** React/Vue/Angular (for Link integration)
+- **Infrastructure:** AWS/GCP/Azure
+- **Security:** Encrypt tokens at rest, HTTPS only
+
+## Best Practices
+
+### When Creating Custom Solution Guides
+
+1. **Be specific about the use case** - Generic use cases produce generic guides
+2. **Include business context** - Payment flows, user journey, volume expectations
+3. **Highlight pain points** - What's broken today?
+4. **Specify success metrics** - What does success look like?
+5. **Consider compliance** - Banking regulations, data privacy
+6. **Plan for scale** - Transaction volume, user growth
+
+### Product Combinations
+
+**Common Combinations:**
+- **Auth + Transfer** = Payment initiation
+- **Auth + Signal** = Risk-assessed payments
+- **Transactions + Income** = Lending underwriting
+- **Auth + Transactions + Balance** = Personal finance management
+- **Identity Verification** = Standalone (always separate flow)
+
+**Anti-patterns:**
+- Don't include Balance in products array (it's auto-available)
+- Don't include Link as a product (it's the UI component)
+- Don't mix IDV with bank linking in same diagram
+
+### Demo Credentials
+
+**Sandbox Testing:**
+- Username: `user_good`
+- Password: `pass_good`
+- MFA: `1234` (if prompted)
+
+**Institutions:**
+- First Platypus Bank (all products enabled)
+- Tartan Bank (testing purposes)
+
+## Integration with Other Tools
+
+### Export to Confluence
+```markdown
+1. Generate guide in tool
+2. Export as Markdown
+3. Copy/paste into Confluence
+4. Add images manually (Mermaid diagrams)
+```
+
+### Export to Google Docs
+```markdown
+1. Generate guide in tool
+2. Export as PDF
+3. Upload to Google Drive
+4. Share with team
+```
+
+### Integration with Salesforce
+```markdown
+1. Generate guide in tool
+2. Export as PDF
+3. Attach to Opportunity in Salesforce
+4. Reference in proposal documents
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**"Failed to fetch" error in Demo tab:**
+- Backend not running or not deployed
+- Check Backend URL in Advanced settings
+- Verify CORS is enabled (already configured in demo-backend-server.js)
+
+**Diagrams not rendering:**
+- Mermaid.js failed to load
+- Check browser console for errors
+- Refresh page
+
+**Code copy not working:**
+- Browser clipboard permissions
+- Try manual copy/paste
+- Check browser console
+
+**Products not detected correctly:**
+- Use case description too vague
+- Manually add/remove products using badges
+- Guide will regenerate automatically
+
+### Backend Deployment Issues
+
+**Port binding error:**
+- Backend uses `process.env.PORT || 3000`
+- No changes needed for most platforms
+
+**CORS errors:**
+- CORS is enabled for all origins in backend
+- Verify backend URL matches in HTML
+
+**Dependencies not installing:**
+- Check `package.json` is present
+- Run `npm install` manually
+- Verify Node.js version (14+)
+
+## Version History
+
+**v1.0 (January 2026):**
+- Initial release
+- Support for 9 Plaid products
+- Live Demo capability
+- Multi-format export
+- Scope calculator
+- Dynamic product selection
+
+## Maintained By
+
+**Product Owner:** Solutions Engineering Team  
+**Technical Contact:** Your SE Team Lead  
+**Last Updated:** January 2026  
+
+## Related Resources
+
+- [Plaid API Documentation](https://plaid.com/docs/)
+- [Plaid Quickstart](https://github.com/plaid/quickstart)
+- [Solutions Engineering Playbook](https://internal-link)
+- [@call-prep.mdc](.cursor/rules/html-template-call-prep.mdc) - Call prep template
+
+---
+
+**Usage Example:**
+
+```
+User: "Create a solution guide for a customer who wants to verify bank accounts for ACH payments and assess payment risk"
+
+AI Response:
+- Opens plaid_solutions_architect_ai.html
+- Enters use case in tool
+- Generates guide recommending Auth + Signal + Balance
+- Reviews architecture diagrams
+- Exports as PDF for customer proposal
+```
+
+This tool streamlines the solution architecture process, ensuring consistent, high-quality technical documentation for Plaid integrations.

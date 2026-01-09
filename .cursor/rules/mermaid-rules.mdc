@@ -1,0 +1,723 @@
+---
+description: mermaid-rules
+alwaysApply: false
+---
+# Mermaid Syntax Guidelines for AI Agents
+
+## Overview
+This document provides comprehensive rules and guidelines for AI agents generating Mermaid diagram syntax. Following these rules ensures diagrams render correctly and maintain readability.
+
+---
+
+## Universal Rules (Apply to All Diagram Types)
+
+### 1. **Single-Line Message Text**
+- **RULE:** All labels, messages, and text content MUST be on a single line
+- **NEVER:** Split text across multiple lines without explicit break tags
+- **USE:** `<br/>` for intentional line breaks within text
+
+```mermaid
+✅ CORRECT:
+A->>B: POST /api/endpoint<br/>(with parameters)
+
+❌ INCORRECT:
+A->>B: POST /api/endpoint
+(with parameters)
+```
+
+### 2. **Special Character Escaping**
+- **HTML entities required for:** `<`, `>`, `&`, `"`, `'`
+- **Escape as:**
+  - `<` → `&lt;`
+  - `>` → `&gt;`
+  - `&` → `&amp;`
+  - `"` → `&quot;`
+  - `'` → `&apos;` or `&#39;`
+
+**CRITICAL: Colons and Equals in Parentheses**
+- **NEVER use colons inside parentheses** in message text: `(key: value)` will cause "Syntax error in text"
+- **NEVER use equals inside parentheses** in message text: `(score >= 70 = pass)` will cause syntax errors
+- **SAFE alternatives:**
+  - Remove parentheses: `key value` or `score gte 70`
+  - Use different punctuation: `[key value]` or `with key value`
+  - Separate lines: Use `<br/>` to split content
+
+### 3. **Reserved Keywords - CRITICAL**
+**NEVER use Mermaid reserved keywords as participant identifiers or node IDs**
+
+Mermaid reserves certain keywords that will cause "Syntax error in text" if used as participant names or node IDs:
+
+**Common reserved keywords:**
+- `LINK` - Reserved for internal linking mechanisms
+- `LOOP` - Reserved for loop constructs
+- `ALT` - Reserved for alternative paths (alt/else blocks)
+- `OPT` - Reserved for optional blocks
+- `PAR` - Reserved for parallel execution blocks
+- `AND` - Reserved for logical operations and parallel blocks
+- `OR` - Reserved for logical operations
+- `NOT` - Reserved for logical operations
+- `END` - Reserved for closing blocks
+- `BREAK` - Reserved for break statements
+- `CRITICAL` - Reserved for critical regions
+- `ELSE` - Reserved for else blocks
+- `NOTE` - Reserved for note declarations (less strict but avoid)
+
+**Examples:**
+```mermaid
+❌ INCORRECT - Using reserved keyword as participant ID:
+sequenceDiagram
+    participant LINK as Plaid Link
+    participant ALT as Alternative Service
+    participant END as End Service
+    
+    LINK->>ALT: Message
+    %% This will cause "Syntax error in text"
+
+✅ CORRECT - Using safe identifiers:
+sequenceDiagram
+    participant PLAID_LINK as Plaid Link
+    participant ALT_SERVICE as Alternative Service  
+    participant END_USER as End User
+    participant LINK_SERVICE as Link Service
+    
+    PLAID_LINK->>ALT_SERVICE: Message
+```
+
+**Safe naming patterns to avoid reserved keywords:**
+- Add underscores: `PLAID_LINK`, `USER_LINK`, `END_USER`
+- Add prefixes/suffixes: `LINK_SVC`, `SVC_LINK`, `LINK1`
+- Use compound names: `LINKSERVICE`, `PLAIDLINK`
+- Use abbreviations: `PLK`, `LNK`, `PS`
+- Add descriptive prefix: `SERVICE_LINK`, `API_LINK`
+
+**Testing tip:** If you get a syntax error and can't identify the cause, check if any participant IDs match common programming keywords (if, else, for, while, switch, case, etc.) or Mermaid diagram keywords.
+
+### 4. **Quotation Marks for Special Cases**
+- **USE quotes when text contains:**
+  - Parentheses: `()`
+  - Brackets: `[]`, `{}`
+  - Colons: `:`
+  - Semicolons: `;`
+  - Special characters that might confuse parser
+  - Commas in context where they might be delimiters
+
+```mermaid
+✅ CORRECT:
+A-->B["User input: (name, email)"]
+
+✅ ALSO ACCEPTABLE:
+A-->B: User input - name and email
+```
+
+### 4. **Whitespace Rules**
+- **NO leading/trailing spaces** in node IDs
+- **Consistent indentation** (2 or 4 spaces recommended)
+- **One blank line** between major sections (optional but improves readability)
+- **NO tabs** - use spaces only
+
+### 5. **Comment Syntax**
+- **Single-line comments:** `%% This is a comment`
+- **MUST start at beginning of line** (no inline comments)
+- **USE for:**
+  - Explaining complex logic
+  - Marking sections
+  - Temporary removal of code
+
+```mermaid
+✅ CORRECT:
+%% This section handles authentication
+A->>B: Login request
+
+❌ INCORRECT:
+A->>B: Login request %% authentication step
+```
+
+### 6. **Character Restrictions in IDs**
+- **Node/participant IDs:**
+  - Start with letter or underscore
+  - Can contain: letters, numbers, underscores, hyphens
+  - **NO spaces** in IDs
+  - Case-sensitive
+
+```mermaid
+✅ CORRECT:
+participant USER as "End User"
+participant API_Gateway
+
+❌ INCORRECT:
+participant End User
+participant API Gateway
+```
+
+---
+
+## Sequence Diagram Rules
+
+### 7. **Participant Declaration**
+- **Declare participants explicitly** for clarity
+- **Syntax:** `participant ID as "Display Name"`
+- **Order matters:** Participants appear left-to-right in declaration order
+- **Aliases:** Use short IDs, descriptive display names
+
+```mermaid
+✅ CORRECT:
+participant USER as "End User"
+participant API as "Backend API"
+participant DB as "Database"
+
+❌ PROBLEMATIC:
+participant "End User"
+participant "Backend API"
+```
+
+### 8. **Arrow Types**
+- **Solid arrows (synchronous):**
+  - `->` : Solid line without arrowhead
+  - `->>` : Solid line with arrowhead
+- **Dotted arrows (asynchronous/return):**
+  - `-->` : Dotted line without arrowhead
+  - `-->>` : Dotted line with arrowhead
+- **Cross arrows (lost message):**
+  - `-x` : Solid line with cross
+  - `--x` : Dotted line with cross
+- **Open arrows:**
+  - `-)` : Solid with open arrow
+  - `--)` : Dotted with open arrow
+
+**CONSISTENCY:** Use same arrow types for similar interactions
+
+### 9. **Activation Boxes**
+- **Syntax:** `activate` and `deactivate`
+- **Must be properly paired**
+- **Alternative:** Use `+` and `-` suffixes
+
+```mermaid
+✅ CORRECT:
+A->>+B: Request
+B-->>-A: Response
+
+✅ ALSO CORRECT:
+A->>B: Request
+activate B
+B-->>A: Response
+deactivate B
+```
+
+### 10. **Note Placement**
+- **Syntax options:**
+  - `Note left of A: Text`
+  - `Note right of A: Text`
+  - `Note over A: Text`
+  - `Note over A,B: Text` (spans multiple participants)
+- **Multi-line notes:** Use `<br/>` or end delimiter
+
+```mermaid
+✅ CORRECT:
+Note over A,B: This spans both<br/>participants
+
+✅ ALSO CORRECT:
+Note left of A: Single participant note
+```
+
+### 11. **Loops**
+- **Syntax:** `loop [Label]` ... `end`
+- **Label is required**
+- **Proper nesting** essential
+
+```mermaid
+✅ CORRECT:
+loop Every 5 seconds
+    A->>B: Health check
+    B-->>A: Status OK
+end
+```
+
+### 12. **Alt/Else Blocks**
+- **Syntax:** `alt [Condition]` ... `else [Condition]` ... `end`
+- **Else is optional**
+- **Multiple else blocks allowed** with `else [Condition]`
+- **Proper indentation** improves readability
+
+```mermaid
+✅ CORRECT:
+alt Successful case
+    A->>B: Success
+else Failure case
+    A->>B: Failure
+end
+```
+
+### 13. **Parallel Execution**
+- **Syntax:** `par [Label]` ... `and [Label]` ... `end`
+- **Use for concurrent operations**
+
+```mermaid
+✅ CORRECT:
+par Check inventory
+    A->>B: Query stock
+and Verify payment
+    A->>C: Check funds
+end
+```
+
+### 14. **Autonumbering**
+- **Syntax:** `autonumber` at diagram start
+- **Optional format:** `autonumber 10 10` (start, increment)
+
+---
+
+## Flowchart Rules
+
+### 15. **Node Syntax**
+- **Rectangle:** `A[Text]`
+- **Rounded:** `A(Text)` or `A([Text])`
+- **Stadium:** `A([Text])`
+- **Subroutine:** `A[[Text]]`
+- **Cylindrical (database):** `A[(Text)]`
+- **Circle:** `A((Text))`
+- **Asymmetric (flag):** `A>Text]`
+- **Rhombus (decision):** `A{Text}`
+- **Hexagon:** `A{{Text}}`
+- **Parallelogram:** `A[/Text/]` or `A[\Text\]`
+- **Trapezoid:** `A[/Text\]` or `A[\Text/]`
+
+### 16. **Connection Syntax**
+- **Arrow:** `-->`
+- **Open link:** `---`
+- **Dotted arrow:** `-.->` 
+- **Dotted link:** `-.-`
+- **Thick arrow:** `==>`
+- **Thick link:** `===`
+- **Invisible:** `~~~`
+- **Chaining allowed:** `A --> B --> C`
+
+### 17. **Link Text**
+- **Syntax:** `A -->|Label| B`
+- **Alternative:** `A -- Label --> B`
+- **USE quotes** if label contains special chars
+
+```mermaid
+✅ CORRECT:
+A -->|"Yes (confirmed)"| B
+A -- "User selects option" --> B
+
+❌ PROBLEMATIC:
+A -->|Yes: confirmed| B
+```
+
+### 18. **Subgraphs**
+- **Syntax:** `subgraph Title` ... `end`
+- **Optional ID:** `subgraph ID [Title]`
+- **Can be nested**
+- **Direction can be set:** `subgraph ID direction TB`
+
+```mermaid
+✅ CORRECT:
+subgraph Authentication
+    direction LR
+    A[Login] --> B[Verify]
+end
+```
+
+### 19. **Direction**
+- **Set with:** `graph TD`, `graph LR`, `graph RL`, `graph BT`
+- **TD/TB:** Top to bottom
+- **LR:** Left to right
+- **RL:** Right to left
+- **BT:** Bottom to top
+- **MUST be first line** (after diagram type)
+
+---
+
+## State Diagram Rules
+
+### 20. **State Declaration**
+- **Simple:** `state "State Name"`
+- **With ID:** `state "Display Name" as ID`
+- **Composite states:** Can contain other states
+
+```mermaid
+✅ CORRECT:
+state "Logged In" as LoggedIn
+state "Processing Payment" as Processing
+```
+
+### 21. **Transitions**
+- **Syntax:** `StateA --> StateB : Label`
+- **Special states:**
+  - `[*]` : Start/End state
+- **Must have clear start state**
+
+```mermaid
+✅ CORRECT:
+[*] --> Idle
+Idle --> Processing : Start
+Processing --> Complete : Success
+Complete --> [*]
+```
+
+### 22. **Composite States**
+- **Syntax:** `state ID { ... }`
+- **Can contain nested states and transitions**
+
+---
+
+## Class Diagram Rules
+
+### 23. **Class Declaration**
+- **Syntax:** `class ClassName`
+- **Members:** Use `+`, `-`, `#`, `~` for visibility
+  - `+` : Public
+  - `-` : Private
+  - `#` : Protected
+  - `~` : Package/Internal
+
+```mermaid
+✅ CORRECT:
+class User {
+    +String name
+    -String password
+    +login()
+    -validatePassword()
+}
+```
+
+### 24. **Relationships**
+- **Inheritance:** `<|--`
+- **Composition:** `*--`
+- **Aggregation:** `o--`
+- **Association:** `-->`
+- **Dependency:** `..>`
+- **Realization:** `..|>`
+- **Link (solid):** `--`
+- **Link (dashed):** `..`
+
+### 25. **Cardinality**
+- **Syntax:** `"1" --> "many"`
+- **Common notations:** `1`, `0..1`, `1..*`, `*`, `n`, `0..n`, `1..n`
+
+---
+
+## Entity Relationship Diagram Rules
+
+### 26. **Entity Declaration**
+- **Syntax:** 
+```mermaid
+EntityName {
+    type attribute
+    type attribute PK
+    type attribute FK
+}
+```
+
+### 27. **Relationship Syntax**
+- **Format:** `EntityA ||--o{ EntityB : "relationship"`
+- **Cardinality symbols:**
+  - `||` : Exactly one
+  - `o|` : Zero or one
+  - `}o` : Zero or more
+  - `}|` : One or more
+- **Line types:**
+  - `--` : Non-identifying
+  - `..` : Identifying
+
+---
+
+## Gantt Chart Rules
+
+### 28. **Date Format**
+- **Use consistent format:** `YYYY-MM-DD`
+- **Set date format:** `dateFormat YYYY-MM-DD`
+
+### 29. **Task Syntax**
+- **Format:** `Task Name :id, start, duration`
+- **Dependencies:** Reference other task IDs
+- **Status markers:** `done`, `active`, `crit`
+
+```mermaid
+✅ CORRECT:
+dateFormat YYYY-MM-DD
+title Project Schedule
+section Phase 1
+Task 1 :done, t1, 2024-01-01, 30d
+Task 2 :active, t2, after t1, 20d
+```
+
+---
+
+## Pie Chart Rules
+
+### 30. **Data Format**
+- **Syntax:** `"Label" : value`
+- **Values:** Numeric only
+- **Title optional:** `title Chart Title`
+
+```mermaid
+✅ CORRECT:
+pie title Browser Usage
+    "Chrome" : 45
+    "Firefox" : 25
+    "Safari" : 20
+    "Other" : 10
+```
+
+---
+
+## Git Graph Rules
+
+### 31. **Commit Syntax**
+- **Basic:** `commit`
+- **With message:** `commit id: "message"`
+- **Tags:** `commit tag: "v1.0"`
+
+### 32. **Branch Operations**
+- **Create:** `branch branch-name`
+- **Checkout:** `checkout branch-name`
+- **Merge:** `merge branch-name`
+
+---
+
+## Common Error Prevention
+
+### 33. **Syntax Validation Checklist**
+Before finalizing diagram syntax, verify:
+- [ ] No multi-line text without `<br/>` tags
+- [ ] Special characters properly escaped
+- [ ] All blocks properly closed (`end` statements)
+- [ ] Quotes around text with special characters
+- [ ] Consistent indentation
+- [ ] No spaces in IDs/node names
+- [ ] Proper arrow syntax
+- [ ] Valid diagram type declaration
+- [ ] No trailing commas or semicolons
+- [ ] Comments on separate lines
+
+### 34. **Debugging Strategies**
+When diagram fails to render:
+1. **Check line breaks** - Most common issue
+2. **Verify quotes** around special characters
+3. **Confirm all blocks closed** (loops, alt, subgraphs)
+4. **Validate arrow syntax** - correct number of dashes/symbols
+5. **Check participant/node declarations** - proper format
+6. **Look for typos** in keywords (sequenceDiagram, graph, etc.)
+7. **Verify indentation** - especially in nested structures
+
+### 35. **Performance Considerations**
+- **Limit complexity:** Very large diagrams (>50 nodes) may render slowly
+- **Break into multiple diagrams** when possible
+- **Use subgraphs** to organize complex flowcharts
+- **Avoid excessive nesting** (>4 levels)
+
+---
+
+## Best Practices for AI Generation
+
+### 36. **Readability First**
+- **Use descriptive IDs and labels**
+- **Add comments** to explain complex sections
+- **Group related elements** with whitespace
+- **Consistent naming conventions**
+
+### 37. **Maintainability**
+- **Declare all participants** at the start (sequence diagrams)
+- **Use aliases** for readability: `participant U as "User"`
+- **Logical ordering** of declarations
+- **Consistent arrow types** for similar interactions
+
+### 38. **Accessibility**
+- **Meaningful labels** on all connections
+- **Avoid relying solely on color** (when styling)
+- **Clear state/node names** - no ambiguous abbreviations
+- **Descriptive alt-text mindset** - labels should be self-explanatory
+
+### 39. **Context Awareness**
+When generating diagrams:
+- **Match complexity to audience** - simpler for non-technical users
+- **Include relevant details** - but avoid clutter
+- **Use appropriate diagram type** for the concept
+- **Consider rendering environment** - some platforms have limitations
+
+### 40. **Testing Approach**
+- **Start with minimal viable diagram** - basic structure first
+- **Add complexity incrementally** - easier to isolate errors
+- **Test special characters** in isolated nodes first
+- **Verify before adding styling** - get structure right first
+
+---
+
+## Diagram Type Selection Guide
+
+### 41. **When to Use Each Type**
+
+**Sequence Diagrams:**
+- API interactions
+- System communication flows
+- Time-based processes
+- Request-response patterns
+
+**Flowcharts:**
+- Decision trees
+- Process flows
+- Algorithms
+- User journeys
+
+**State Diagrams:**
+- Object lifecycles
+- UI state management
+- Protocol states
+- Status workflows
+
+**Class Diagrams:**
+- Object-oriented design
+- System architecture
+- Data models
+- Component relationships
+
+**ERD:**
+- Database schema
+- Data relationships
+- Entity modeling
+
+**Gantt Charts:**
+- Project timelines
+- Task scheduling
+- Resource planning
+
+**Git Graphs:**
+- Version control flows
+- Branch strategies
+- Release management
+
+---
+
+## Version-Specific Notes
+
+### 42. **Mermaid Version Considerations**
+- **Syntax may vary** between versions
+- **Test with target version** if known
+- **Use conservative syntax** for compatibility
+- **Latest features** may not work in older renderers
+
+### 43. **Platform-Specific Limitations**
+Different platforms may have:
+- **Character limits** on labels
+- **Node/participant limits**
+- **Rendering timeouts** for complex diagrams
+- **Custom styling restrictions**
+
+---
+
+## Emergency Fallback Rules
+
+### 44. **When Diagram Won't Render**
+If all else fails:
+1. **Simplify ruthlessly** - remove all optional elements
+2. **Remove special characters** - use only alphanumeric
+3. **Break into smaller diagrams** - reduce complexity
+4. **Use basic shapes only** - standard rectangles and arrows
+5. **Test with minimal example** - "A-->B" then build up
+
+### 45. **Validation Hierarchy**
+Validate in this order:
+1. **Diagram type declaration** - correct and complete
+2. **Syntax of each line** - proper format
+3. **Block structure** - all opened blocks closed
+4. **Special characters** - properly escaped
+5. **Text formatting** - single line or proper breaks
+6. **IDs and references** - valid and consistent
+
+---
+
+## Quick Reference Summary
+
+### Critical Rules (Never Break These)
+1. ✅ All text on single line OR use `<br/>`
+2. ✅ Escape special chars: `&lt;` `&gt;` `&amp;`
+3. ✅ Quote labels with special characters
+4. ✅ No spaces in IDs
+5. ✅ Close all blocks with `end`
+6. ✅ Comments must start at beginning of line
+7. ✅ Proper arrow syntax (check dash count)
+8. ✅ Declare participants/nodes before use
+9. ✅ Consistent indentation (spaces only)
+10. ✅ Valid diagram type at start
+11. ✅ NEVER use reserved keywords as IDs (LINK, ALT, LOOP, END, etc.)
+12. ✅ NEVER use colons inside parentheses in message text
+13. ✅ NEVER use equals/comparison operators inside parentheses
+
+### High-Priority Rules (Break at Your Peril)
+- Consistent arrow types
+- Proper nesting of blocks
+- Logical flow direction
+- Meaningful labels
+- No trailing punctuation in syntax
+
+### Nice-to-Have (Improve Quality)
+- Comments explaining logic
+- Whitespace for readability
+- Descriptive display names
+- Organized section grouping
+
+---
+
+**Document Version:** 1.0  
+**Target Mermaid Version:** 9.x - 10.x (latest)  
+**Last Updated:** October 2025  
+**For:** AI agents generating Mermaid diagram syntax
+
+---
+
+## Appendix: Common Patterns
+
+### Pattern 1: Basic Sequence Diagram
+```mermaid
+sequenceDiagram
+    participant A as "Client"
+    participant B as "Server"
+    
+    A->>B: Request
+    B-->>A: Response
+```
+
+### Pattern 2: Flowchart with Decision
+```mermaid
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+    C --> E[End]
+    D --> E
+```
+
+### Pattern 3: State Diagram
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Active : trigger
+    Active --> Complete : finish
+    Complete --> [*]
+```
+
+### Pattern 4: Class Diagram
+```mermaid
+classDiagram
+    class Animal {
+        +String name
+        +makeSound()
+    }
+    class Dog {
+        +bark()
+    }
+    Animal <|-- Dog
+```
+
+---
+
+## Final Note for AI Agents
+
+When uncertain about syntax:
+- **Default to simpler constructs** - they're more likely to work
+- **Test incrementally** - add complexity gradually
+- **Prioritize correctness over aesthetics** - a simple working diagram beats a complex broken one
+- **Document assumptions** - use comments to explain choices
+- **Provide fallback text description** - if diagram generation fails

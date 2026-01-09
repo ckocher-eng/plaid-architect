@@ -1,0 +1,619 @@
+
+---
+# Call Prep HTML Template & Styling Guide
+
+
+When generating HTML output files for call preparation documents (using @call-prep.mdc), use the following template structure and styling guidelines.
+
+
+## Naming Convention (CRITICAL)
+
+
+**ALWAYS use this exact title format for all call prep documents:**
+
+
+```
+Call Prep: {Prospect Name} - {Engagement Type}
+```
+
+
+### Examples:
+- ✅ `Call Prep: SecureSplit - Technical Q&A`
+- ✅ `Call Prep: Cover Whale - Discovery Call`
+- ✅ `Call Prep: Lodg - Product Demo`
+- ❌ `SecureSplit Call Preparation - Technical Q&A` (Wrong format)
+- ❌ `Call Preparation: SecureSplit` (Missing engagement type)
+
+
+### Where to Apply:
+1. **HTML `<title>` tag**: `<title>Call Prep: {Prospect Name} - {Engagement Type}</title>`
+2. **Shareguide upload**: Use `-F "title=Call Prep: {Prospect Name} - {Engagement Type}"` in curl command
+3. **H1 tag**: Use `<h1>[Emoji] Call Preparation: {Company Name}</h1>` (slightly different for visual presentation)
+
+
+## HTML Template Structure
+
+
+All call prep HTML files should follow this structure:
+
+
+1. **Header Section** - Title, subtitle, and prospect emoji
+2. **Info Grid** - Key prospect details in a responsive grid
+3. **Products in Scope** - Bullet list of Plaid products
+4. **Customer Objective** - Description of what they're trying to achieve
+5. **Call Agenda** - Ordered list of call flow
+6. **Key Account Insights** (Highlight Box) - Company overview, business model, pain points
+7. **Previous Conversation Context** - Timeline items with dates and discussion points
+8. **Current Status** (Success Box) - Status badges showing progress
+9. **Strategic Focus** - Key messages and demo flow recommendations
+10. **Key Questions to Prepare For** - Comprehensive Q&A preparation
+11. **Success Metrics & Next Steps** - Clear success criteria and follow-up actions
+12. **Footer** - Prepared by, date, and key context
+
+
+## CSS Styling (Copy Exactly)
+
+
+```css
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+}
+
+
+body {
+   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+   line-height: 1.6;
+   color: #333;
+   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+   padding: 20px;
+}
+
+
+.container {
+   max-width: 1100px;
+   margin: 0 auto;
+   background: #fff;
+   padding: 40px;
+   border-radius: 12px;
+   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+
+.header {
+   border-bottom: 4px solid #10D1B7;
+   padding-bottom: 20px;
+   margin-bottom: 30px;
+}
+
+
+h1 {
+   color: #05565C;
+   font-size: 2.2em;
+   margin-bottom: 10px;
+}
+
+
+.subtitle {
+   color: #666;
+   font-size: 1.1em;
+   font-style: italic;
+}
+
+
+.info-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+   gap: 15px;
+   margin: 25px 0;
+   padding: 20px;
+   background: #f8f9fa;
+   border-radius: 8px;
+   border-left: 4px solid #0DADF2;
+}
+
+
+.info-item {
+   display: flex;
+   flex-direction: column;
+}
+
+
+.info-label {
+   font-weight: 600;
+   color: #05565C;
+   font-size: 0.9em;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   margin-bottom: 5px;
+}
+
+
+.info-value {
+   color: #333;
+   font-size: 1em;
+}
+
+
+.info-value a {
+   color: #0B7BBC;
+   text-decoration: none;
+}
+
+
+.info-value a:hover {
+   text-decoration: underline;
+}
+
+
+h2 {
+   color: #05565C;
+   font-size: 1.6em;
+   margin-top: 35px;
+   margin-bottom: 15px;
+   padding-bottom: 10px;
+   border-bottom: 2px solid #10D1B7;
+}
+
+
+h3 {
+   color: #0B7BBC;
+   font-size: 1.3em;
+   margin-top: 25px;
+   margin-bottom: 12px;
+}
+
+
+.section {
+   margin-bottom: 30px;
+}
+
+
+.highlight-box {
+   background: linear-gradient(135deg, #10D1B7 0%, #0DADF2 100%);
+   color: white;
+   padding: 20px;
+   border-radius: 8px;
+   margin: 20px 0;
+}
+
+
+.highlight-box h3 {
+   color: white;
+   border: none;
+   margin-top: 0;
+}
+
+
+.highlight-box p, .highlight-box ul {
+   color: white;
+}
+
+
+ul {
+   margin-left: 25px;
+   margin-top: 10px;
+   margin-bottom: 15px;
+}
+
+
+li {
+   margin-bottom: 10px;
+}
+
+
+strong {
+   color: #05565C;
+   font-weight: 600;
+}
+
+
+.status-badge {
+   display: inline-block;
+   padding: 5px 12px;
+   border-radius: 20px;
+   font-size: 0.85em;
+   font-weight: 600;
+   margin-left: 10px;
+}
+
+
+.status-discovery {
+   background: #FFF3CD;
+   color: #856404;
+}
+
+
+.status-complete {
+   background: #D4EDDA;
+   color: #155724;
+}
+
+
+.status-pending {
+   background: #D1ECF1;
+   color: #0C5460;
+}
+
+
+.timeline-item {
+   padding: 15px;
+   border-left: 3px solid #10D1B7;
+   margin-bottom: 15px;
+   background: #f8f9fa;
+   border-radius: 4px;
+}
+
+
+.timeline-date {
+   font-weight: 600;
+   color: #0B7BBC;
+   margin-bottom: 5px;
+}
+
+
+.warning-box {
+   background: #FFF3CD;
+   border-left: 4px solid #FFC107;
+   padding: 15px;
+   margin: 20px 0;
+   border-radius: 4px;
+}
+
+
+.warning-box strong {
+   color: #856404;
+}
+
+
+.success-box {
+   background: #D4EDDA;
+   border-left: 4px solid #28A745;
+   padding: 15px;
+   margin: 20px 0;
+   border-radius: 4px;
+}
+
+
+.success-box strong {
+   color: #155724;
+}
+
+
+.key-questions {
+   background: #E7F3FF;
+   padding: 20px;
+   border-radius: 8px;
+   margin-top: 20px;
+}
+
+
+.key-questions h3 {
+   color: #05565C;
+   margin-top: 0;
+}
+
+
+.key-questions ul {
+   margin-left: 20px;
+}
+
+
+.contact-info {
+   background: #f8f9fa;
+   padding: 15px;
+   border-radius: 8px;
+   margin: 15px 0;
+}
+
+
+.architecture-box {
+   background: #F0F4F8;
+   border: 2px solid #0DADF2;
+   padding: 20px;
+   border-radius: 8px;
+   margin: 20px 0;
+}
+
+
+.architecture-box h3 {
+   color: #05565C;
+   margin-top: 0;
+}
+
+
+.flow-step {
+   background: white;
+   padding: 12px;
+   margin: 10px 0;
+   border-left: 4px solid #10D1B7;
+   border-radius: 4px;
+}
+
+
+.persona-tag {
+   display: inline-block;
+   background: #10D1B7;
+   color: white;
+   padding: 3px 10px;
+   border-radius: 12px;
+   font-size: 0.85em;
+   margin-right: 5px;
+}
+
+
+@media print {
+   body {
+       background: white;
+   }
+   .container {
+       box-shadow: none;
+       padding: 20px;
+   }
+}
+```
+
+
+## Color Palette (Plaid Brand Colors)
+
+
+Use these colors consistently:
+- **Primary Teal (Minted):** `#10D1B7` - Headers, accents, borders
+- **Blue Sky:** `#0DADF2` - Secondary accents, info boxes
+- **Dark Minted:** `#05565C` - Headings, strong text
+- **Blue:** `#0B7BBC` - Links, timeline dates
+- **Light Gray:** `#f8f9fa` - Background boxes
+- **Gradient Background:** `linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)`
+- **Gradient Highlight:** `linear-gradient(135deg, #10D1B7 0%, #0DADF2 100%)`
+
+
+## Required Sections
+
+
+### 1. Header
+```html
+<div class="header">
+   <h1>[Emoji] Call Preparation: [Company Name]</h1>
+   <p class="subtitle">[Engagement Type]: [Brief Description]</p>
+</div>
+```
+
+
+### 2. Info Grid (REQUIRED FIELDS)
+
+
+**CRITICAL:** Always pull AE name and ACV from Salesforce data when available.
+
+
+**Required Fields (always include):**
+- **Prospect Name** - Company name
+- **Website** - Company website URL (linked)
+- **SFDC Opportunity** - Link to Salesforce opportunity
+- **Account Executive** - **MUST pull from Salesforce** (Owner name and email)
+- **ACV (Annual Contract Value)** - **MUST pull from Salesforce** (show in status badge with opportunity stage)
+- **Sales Engineer** - Your name (Sarah Mueller, smueller@plaid.com)
+- **Engagement Type** - Type of call (Technical Q&A, Demo, Discovery, etc.)
+
+
+**Optional Fields (include when available):**
+- Opportunity Stage - Discovery, Evaluation, Negotiation, etc. (with ACV in status badge)
+- Company Size - Employee count or startup/SMB/enterprise designation
+- Company Type - Industry or business model details
+
+
+**Example Info Grid Structure:**
+```html
+<div class="info-grid">
+   <div class="info-item">
+       <div class="info-label">Prospect Name</div>
+       <div class="info-value">Company Name</div>
+   </div>
+   <div class="info-item">
+       <div class="info-label">Website</div>
+       <div class="info-value"><a href="https://company.com" target="_blank">company.com</a></div>
+   </div>
+   <div class="info-item">
+       <div class="info-label">SFDC Opportunity</div>
+       <div class="info-value"><a href="https://plaidinc.lightning.force.com/..." target="_blank">Opp ID</a></div>
+   </div>
+   <div class="info-item">
+       <div class="info-label">Opportunity Stage</div>
+       <div class="info-value">Evaluation <span class="status-badge status-discovery">$25K ACV</span></div>
+   </div>
+   <div class="info-item">
+       <div class="info-label">Account Executive</div>
+       <div class="info-value">AE Name (ae@plaid.com)</div>
+   </div>
+   <div class="info-item">
+       <div class="info-label">Sales Engineer</div>
+       <div class="info-value">Sarah Mueller (smueller@plaid.com)</div>
+   </div>
+   <div class="info-item">
+       <div class="info-label">Engagement Type</div>
+       <div class="info-value">Technical Q&A</div>
+   </div>
+</div>
+```
+
+
+**Status Badge Colors by ACV:**
+- Use `.status-discovery` (yellow) for deals under $50K
+- Use `.status-pending` (blue) for deals $50K-$150K 
+- Use `.status-complete` (green) for deals over $150K
+
+
+### 3. Highlight Box for Key Insights
+Use gradient highlight box for the most important account insights:
+```html
+<div class="highlight-box">
+   <h3>🔍 Key Account Insights</h3>
+   <p><strong>Company Overview:</strong> ...</p>
+   <p style="margin-top: 15px;"><strong>Business Model:</strong> ...</p>
+   <p style="margin-top: 15px;"><strong>Critical Pain Points:</strong> ...</p>
+</div>
+```
+
+
+### 4. Timeline Items for Call History
+```html
+<div class="timeline-item">
+   <div class="timeline-date">📞 [Date] - [Call Type]</div>
+   <p><strong>Key Discussion Points:</strong></p>
+   <ul>
+       <li><strong>[Topic]:</strong> [Details]</li>
+   </ul>
+</div>
+```
+
+
+### 5. Status Badges
+Use appropriate status badges:
+- `.status-discovery` - Yellow (Discovery stage, in progress)
+- `.status-complete` - Green (Completed, active, approved)
+- `.status-pending` - Blue (Pending, in review, waiting)
+
+
+### 6. Contact/Persona Information
+When listing key attendees, use this format:
+```html
+<div class="contact-info">
+   <strong>[Name] - [Title]</strong> <span class="persona-tag">[Tag]</span><br>
+   Email: [email] | Phone: [phone]<br>
+   Location: [location]<br>
+   <strong>Persona:</strong> [Description]
+</div>
+```
+
+
+### 7. Key Questions Section
+Always use the light blue background box:
+```html
+<div class="key-questions">
+   <h3>📋 Key Questions to Prepare For</h3>
+   <ul>
+       <li><strong>[Question Category]:</strong> [Question details]</li>
+   </ul>
+</div>
+```
+
+
+### 8. Footer
+```html
+<div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #eee; color: #666; font-size: 0.9em;">
+   <p><strong>Prepared by:</strong> Sarah Mueller, Sales Engineer</p>
+   <p><strong>Date:</strong> [Date]</p>
+   <p><strong>Opportunity Owner:</strong> [AE Name] ([email])</p>
+</div>
+```
+
+
+## Emoji Guidelines
+
+
+Use relevant emojis in section headers and titles:
+- 📋 Products, Lists, Documentation
+- 🎯 Goals, Objectives, Focus
+- 🔍 Insights, Discovery, Analysis
+- 📞 Calls, Conversations, History
+- 💬 Discussion, Context, Communication
+- ✅ Success, Status, Completion
+- ⚠️ Warnings, Risks, Critical Info
+- 💰 Pricing, Revenue, Financial
+- 🏁 Next Steps, Completion, Goals
+- 👥 People, Attendees, Contacts
+- 🚛 🏗️ 🏦 💼 - Industry-specific (trucking, construction, banking, business)
+
+
+## Special Components (Use When Applicable)
+
+
+### Architecture/Flow Diagrams
+```html
+<div class="architecture-box">
+   <h3>🏗️ [Title]</h3>
+   <p><strong>Goal:</strong> [Description]</p>
+  
+   <div class="flow-step">
+       <strong>Step 1: [Name]</strong><br>
+       [Description]
+   </div>
+</div>
+```
+
+
+### Warning/Critical Context
+```html
+<div class="warning-box">
+   <strong>⚠️ Critical Context:</strong>
+   <ul style="margin-top: 10px;">
+       <li><strong>[Point]:</strong> [Details]</li>
+   </ul>
+</div>
+```
+
+
+### Success Status
+```html
+<div class="success-box">
+   <strong>✅ Current Status:</strong>
+   <ul style="margin-top: 10px;">
+       <li>[Item]: <span class="status-badge status-complete">STATUS</span></li>
+   </ul>
+</div>
+```
+
+
+## Content Guidelines
+
+
+1. **Be comprehensive but scannable** - Use clear headings, bullet points, and highlight boxes
+2. **Include specific quotes** - Direct quotes from Gong calls add authenticity
+3. **Provide context for technical terms** - Explain acronyms and industry jargon
+4. **Include pricing when discussed** - Help AE understand deal value
+5. **Surface risks and objections** - Don't hide challenges
+6. **Add personality notes** - "Talkative", "Technical", "Decision Maker" tags help prepare
+7. **Link to resources** - SFDC, Gong calls, documentation
+8. **Make it actionable** - Clear success criteria and next steps
+
+
+## File Naming Convention
+
+
+Use this pattern: `[company_name]_call_prep.html`
+
+
+Examples:
+- `cover_whale_call_prep.html`
+- `lodg_call_prep.html`
+- `tap_in_fantasy_call_prep.html`
+
+
+## When to Use HTML vs. Markdown
+
+
+- **Use HTML format** when creating a file output (user explicitly requests file or HTML)
+- **Use Markdown format** when displaying in chat (user requests "show here" or "in chat")
+- **Default to HTML file** if ambiguous - more professional and shareable
+
+
+## Integration with @shareguide.mdc
+
+
+After creating an HTML call prep, offer to share it using the shareguide upload command. This allows the user to get a shareable link for distribution to their team.
+
+
+---
+
+
+**Maintained By:** Sarah Mueller, Sales Engineer 
+**Template Version:** 1.1 
+**Last Updated:** November 25, 2025 
+**Template Issues:** Contact Sarah Mueller
+
+
+**Version History:**
+- v1.1 (Nov 25, 2025): Added requirement to always include AE name and ACV from Salesforce in info grid
+- v1.0 (Nov 21, 2025): Initial template creation
+
+

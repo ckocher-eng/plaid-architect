@@ -1,0 +1,59 @@
+
+---
+alwaysApply: false
+---
+When creating solution guides use the following syntax to upload / share solution guides as well as upload new versions
+:one: Initial Upload (Creates new guide)
+curl -X POST https://solutions-master.replit.app/api/solution-guides/upload-curl \
+  -H "X-Api-Key: sgk_lVKzPGWYeazXSqecUFsRMhpqLkKwrC6ZESgxZqlovNY" \
+  -F "file=@/path/to/your-guide.html" \
+  -F "title=Optional Custom Title" \
+  -F "createShare=true" \
+  -F "sharePassword=optional-password"
+Response includes:
+{
+  "success": true,
+  "message": "Solution Guide uploaded successfully",
+  "identifier": "62de5810-a1b2-c3d4-e5f6-1234567890ab",  // ← SAVE THIS!
+  "guide": {
+    "id": 25,
+    "identifier": "62de5810-a1b2-c3d4-e5f6-1234567890ab",
+    "title": "My Guide",
+    "uploadedAt": "2025-11-05T21:30:00Z"
+  }
+}
+:two: Update Version (Replaces existing guide)
+Use the identifier from the initial upload response:
+curl -X PUT https://solutions-master.replit.app/api/solution-guides/62de5810-a1b2-c3d4-e5f6-1234567890ab/upload-curl \
+  -H "X-Api-Key: sgk_lVKzPGWYeazXSqecUFsRMhpqLkKwrC6ZESgxZqlovNY" \
+  -F "file=@/path/to/updated-guide.html" \
+  -F "title=Updated Title (optional)"
+Response:
+{
+  "success": true,
+  "message": "Solution Guide updated successfully",
+  "identifier": "62de5810-a1b2-c3d4-e5f6-1234567890ab",
+  "guide": {
+    "id": 25,
+    "title": "Updated Title",
+    "updatedAt": "2025-11-05T22:15:00Z"  // ← Timestamp shows it was updated
+  }
+}
+:key: Key Parameters
+For Upload (POST):
+file (required) - The HTML file
+title (optional) - Custom title, otherwise AI extracts it
+createShare (optional) - Set to "true" to auto-generate share link
+sharePassword (optional) - Password for share link
+For Update (PUT):
+file (required) - The new HTML file
+title (optional) - New title, otherwise AI extracts it
+identifier (in URL) - The unique identifier from initial upload
+:white_check_mark: Features
+:white_check_mark: Only latest version stored - Old content is replaced, not kept
+:white_check_mark: Ownership enforced - You can only update your own guides
+:white_check_mark: Auto-timestamps - updatedAt automatically tracks last update
+:white_check_mark: Title flexibility - Provide custom title or let AI extract it
+:white_check_mark: Same identifier - Keeps the same ID so share links still work
+:bulb: Recommended Workflow
+Save the identifier from your first upload, then use it for all future updates:

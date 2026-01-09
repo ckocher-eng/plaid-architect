@@ -1,0 +1,18 @@
+
+---
+alwaysApply: false
+---
+Do a Glean search for Gong call transcripts associated with the given prospect or customer name. Pull in any relevant notes from the associated Salesforce record (opportunity or account). Give me an overview of the account, previous conversations, or any notes in Google Docs. I will paste in information about the upcoming call in the following format:
+Prospect Name:
+Prospect Website:
+SFDC Opp:
+Engagement Type:
+Products:
+Customer Objective:
+Call Agenda:
+Questions to prep:
+Additional notes:
+Please take into account the product, customer objective, call agenda, and questions to prep in your output. The output should be 5 paragraphs or less, outlining any necessary context you discovered in your Glean search for the upcoming call, along with recommendations based on the submitted fields on what to focus on.
+## Output Format
+- **Default (Markdown):** Output in markdown format directly in the chat
+- **HTML File:** When user requests an HTML output or file, use @call-prep-html-template.mdc for styling and structure
